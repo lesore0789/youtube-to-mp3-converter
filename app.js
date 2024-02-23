@@ -22,9 +22,26 @@ app.use(express.json());
 app.get("/", (req, res) =>{
   res.render('index.ejs')
 })
-// app.post("/", (req, res) =>{
-
-// }
+app.post("/convert-mp3", async (req, res) =>{
+  const videoId = req.body.videoID;
+  if(videoId === undefined || videoId === "" || videoId === null) {
+    return res.render("index", {success : false, message : "Please enter a video ID"})
+  } else{
+    const fetchAPI = await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${videoId}`, {
+      method: "GET",
+      headers: {
+        'X-RapidAPI-Key': process.env.API_KEY,
+		    'X-RapidAPI-Host': process.env.API_HOST
+      }
+    });
+    const fetchResponse = await fetchAPI.json();
+    if(fetchResponse.status === "ok"){
+      return res.render("index", {success : true, song_title: fetchResponse.title, song_link: fetchResponse.link})
+    } else {
+      return res.render("index", {success: false, message: fetchResponse.msg})
+    }
+  }
+})
 
 // Start Server
 app.listen(PORT, () => {
